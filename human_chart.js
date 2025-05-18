@@ -16,7 +16,7 @@ var xScale = d3.scaleBand().range([0, width]).padding(0.2);
 var pScaleLegs = d3.scaleLinear().range([50, height * 0.3]);
 var pScaleArms = d3.scaleLinear().range([50, height * 0.3]);
 var pScaleTorso = d3.scaleLinear().range([50, height * 0.3]);
-var pScaleHead = d3.scaleLinear().range([50, height * 0.3]);
+var pScaleHead = d3.scaleLinear()
 
 function setXScaleDomain(data) {
     xScale.domain(data.map(function (d) { return d.id; }));
@@ -54,6 +54,8 @@ function drawPeople(data) {
             return "translate(" + xScale(d.id) + ",0)";
         });
 
+    person.exit().remove();
+
     person.each(function (d) {
         var p = d3.select(this);
         var person_space = xScale.bandwidth();
@@ -62,9 +64,9 @@ function drawPeople(data) {
         // Legs
         p.append("rect")
             .attr("class", "legs")
-            .attr("x", centerX - (person_space * 0.8) / 2)
+            .attr("x", centerX - (person_space * 0.6) / 2)
             .attr("y", height - pScaleLegs(d.legs))
-            .attr("width", person_space * 0.8)
+            .attr("width", person_space * 0.6)
             .attr("height", pScaleLegs(d.legs))
             .style("fill", "blue")
             .style("stroke", "red")
@@ -79,9 +81,72 @@ function drawPeople(data) {
             .attr("stroke", "red")
             .attr("stroke-width", 2);
 
+        // Torso
+        p.append("rect")
+            .attr("class", "torso")
+            .attr("x", centerX - (person_space * 0.6) / 2)
+            .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
+            .attr("width", person_space * 0.6)
+            .attr("height", pScaleTorso(d.torso))
+            .style("fill", "blue")
+            .style("stroke", "red")
+            .style("stroke-width", 2);
+
         // Arms
+        p.append("rect")
+            .attr("class", "arms")
+            .attr("x", (centerX - (person_space * 0.8) / 2) / 2)
+            .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
+            .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
+            .attr("height", pScaleArms(d.arms))
+            .style("fill", "blue")
+            .style("stroke", "red")
+            .style("stroke-width", 2);
+
+        p.append("rect")
+            .attr("class", "arms")
+            .attr("x", (centerX + (person_space * 0.6) / 2) / 2 + person_space * 0.8 / 2)
+            .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
+            .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
+            .attr("height", pScaleArms(d.arms))
+            .style("fill", "blue")
+            .style("stroke", "red")
+            .style("stroke-width", 2);
+
+        // Head
+        pScaleHead.range([35, (person_space * 0.6) / 2]);
+        p.append("circle")
+            .attr("class", "head")
+            .attr("cx", centerX)
+            .attr("cy", height - pScaleLegs(d.legs) - pScaleTorso(d.torso) - pScaleHead(-d.head))
+            .attr("r", pScaleHead(-d.head))
+            .style("fill", "blue")
+            .style("stroke", "red")
+            .style("stroke-width", 2);
     });
 
+    svg.selectAll(".legs, .torso, .arms, .head")
+        .on("mouseover", function () {
+            d3.select(this)
+                .style("fill", "lightblue");
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .style("fill", "blue");
+        }).on("click", function (d) {
+
+            data.sort(function (a, b) { return a.legs - b.legs; });
+
+            xScale.domain(data.map(function (d) { return d.id; }));
+
+            svg.selectAll("g.person")
+                .sort(function (a, b) { return d3.ascending(a.legs, b.legs); })
+                .transition().duration(750)
+                .attr("transform", function (d) {
+                    return "translate(" + xScale(d.id) + ",0)";
+                })
+        });
+    // 4) update the position of the legs, torso, arms, and head});
 
 };
 
