@@ -68,9 +68,9 @@ function drawPeople(data) {
             .attr("y", height - pScaleLegs(d.legs))
             .attr("width", person_space * 0.6)
             .attr("height", pScaleLegs(d.legs))
-            .style("fill", "blue")
-            .style("stroke", "red")
-            .style("stroke-width", 2);
+            .style("fill", "transparent")
+            .style("stroke", "purple")
+            .style("stroke-width", 3);
 
         p.append("line")
             .attr("class", "legs-divider")
@@ -78,8 +78,8 @@ function drawPeople(data) {
             .attr("y1", height - pScaleLegs(d.legs))                 // top of the legs
             .attr("x2", centerX)                                     // same x
             .attr("y2", height)                                      // bottom of the SVG (“ground”)
-            .attr("stroke", "red")
-            .attr("stroke-width", 2);
+            .attr("stroke", "purple")
+            .attr("stroke-width", 3);
 
         // Torso
         p.append("rect")
@@ -88,9 +88,9 @@ function drawPeople(data) {
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", person_space * 0.6)
             .attr("height", pScaleTorso(d.torso))
-            .style("fill", "blue")
-            .style("stroke", "red")
-            .style("stroke-width", 2);
+            .style("fill", "transparent")
+            .style("stroke", "purple")
+            .style("stroke-width", 3);
 
         // Arms
         p.append("rect")
@@ -99,9 +99,9 @@ function drawPeople(data) {
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
             .attr("height", pScaleArms(d.arms))
-            .style("fill", "blue")
-            .style("stroke", "red")
-            .style("stroke-width", 2);
+            .style("fill", "transparent")
+            .style("stroke", "purple")
+            .style("stroke-width", 3);
 
         p.append("rect")
             .attr("class", "arms")
@@ -109,9 +109,9 @@ function drawPeople(data) {
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
             .attr("height", pScaleArms(d.arms))
-            .style("fill", "blue")
-            .style("stroke", "red")
-            .style("stroke-width", 2);
+            .style("fill", "transparent")
+            .style("stroke", "purple")
+            .style("stroke-width", 3);
 
         // Head
         pScaleHead.range([35, (person_space * 0.6) / 2]);
@@ -120,19 +120,19 @@ function drawPeople(data) {
             .attr("cx", centerX)
             .attr("cy", height - pScaleLegs(d.legs) - pScaleTorso(d.torso) - pScaleHead(-d.head))
             .attr("r", pScaleHead(-d.head))
-            .style("fill", "blue")
-            .style("stroke", "red")
-            .style("stroke-width", 2);
+            .style("fill", "transparent")
+            .style("stroke", "purple")
+            .style("stroke-width", 3);
     });
 
-    svg.selectAll(".legs, .torso, .arms, .head")
+    svg.selectAll(".legs")
         .on("mouseover", function () {
             d3.select(this)
                 .style("fill", "lightblue");
         })
         .on("mouseout", function () {
             d3.select(this)
-                .style("fill", "blue");
+                .style("fill", "transparent");
         }).on("click", function (d) {
 
             data.sort(function (a, b) { return a.legs - b.legs; });
@@ -141,12 +141,77 @@ function drawPeople(data) {
 
             svg.selectAll("g.person")
                 .sort(function (a, b) { return d3.ascending(a.legs, b.legs); })
-                .transition().duration(750)
+                .transition().duration(2000)
                 .attr("transform", function (d) {
                     return "translate(" + xScale(d.id) + ",0)";
                 })
         });
-    // 4) update the position of the legs, torso, arms, and head});
+
+    svg.selectAll(".arms")
+        .on("mouseover", function () {
+            d3.select(this)
+                .style("fill", "lightblue");
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .style("fill", "transparent");
+        }).on("click", function (d) {
+
+            data.sort(function (a, b) { return a.arms - b.arms; });
+
+            xScale.domain(data.map(function (d) { return d.id; }));
+
+            svg.selectAll("g.person")
+                .sort(function (a, b) { return d3.ascending(a.arms, b.arms); })
+                .transition().duration(2000)
+                .attr("transform", function (d) {
+                    return "translate(" + xScale(d.id) + ",0)";
+                })
+        });
+
+    svg.selectAll(".torso")
+        .on("mouseover", function () {
+            d3.select(this)
+                .style("fill", "lightblue");
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .style("fill", "transparent");
+        }).on("click", function (d) {
+
+            data.sort(function (a, b) { return a.torso - b.torso; });
+
+            xScale.domain(data.map(function (d) { return d.id; }));
+
+            svg.selectAll("g.person")
+                .sort(function (a, b) { return d3.ascending(a.torso, b.torso); })
+                .transition().duration(2000)
+                .attr("transform", function (d) {
+                    return "translate(" + xScale(d.id) + ",0)";
+                })
+        });
+
+    svg.selectAll(".head")
+        .on("mouseover", function () {
+            d3.select(this)
+                .style("fill", "lightblue");
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .style("fill", "transparent");
+        }).on("click", function (d) {
+
+            data.sort(function (a, b) { return a.head - b.head; });
+
+            xScale.domain(data.map(function (d) { return d.id; }));
+
+            svg.selectAll("g.person")
+                .sort(function (a, b) { return d3.ascending(a.head, b.head); })
+                .transition().duration(2000)
+                .attr("transform", function (d) {
+                    return "translate(" + xScale(d.id) + ",0)";
+                })
+        });
 
 };
 
