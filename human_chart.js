@@ -37,6 +37,41 @@ function setPScaleHead(data) {
     pScaleHead.domain([d3.min(data, function (d) { return d.head; }), d3.max(data, function (d) { return d.head; })]);
 }
 
+function colorPeopleGradient() {
+    svg.selectAll("g.person").each(function (d, i) {
+        d3.select(this).selectAll('.head, .legs, .torso, .arms')
+            .attr("data-original-fill", colorScale(i)) 
+            .transition().duration(800)
+            .style("fill", colorScale(i));
+    });
+}
+
+
+var isSorting = false;
+
+function sortPeopleByAttribute(data, attribute) {
+
+    if (isSorting) return; // Prevent multiple clicks
+    isSorting = true;
+
+    data.sort(function (a, b) {
+        return d3.ascending(a[attribute], b[attribute]);
+    });
+
+    xScale.domain(data.map(function (d) { return d.id; }));
+    var transition = svg.selectAll("g.person")
+        .sort(function (a, b) { return d3.ascending(a[attribute], b[attribute]); })
+        .transition().duration(3000)
+        .attr("transform", function (d) {
+            return "translate(" + xScale(d.id) + ",0)";
+        });
+
+    transition.end().then(function () {
+        colorPeopleGradient();
+        isSorting = false; // Allow sorting again
+    });
+}
+
 function drawPeople(data) {
 
     setXScaleDomain(data);
@@ -67,19 +102,15 @@ function drawPeople(data) {
             .attr("x", centerX - (person_space * 0.6) / 2)
             .attr("y", height - pScaleLegs(d.legs))
             .attr("width", person_space * 0.6)
-            .attr("height", pScaleLegs(d.legs))
-            .style("fill", "transparent")
-            .style("stroke", "purple")
-            .style("stroke-width", 3);
+            .attr("height", pScaleLegs(d.legs));
 
         p.append("line")
             .attr("class", "legs-divider")
             .attr("x1", centerX)                                     // center of the rect
             .attr("y1", height - pScaleLegs(d.legs))                 // top of the legs
             .attr("x2", centerX)                                     // same x
-            .attr("y2", height)                                      // bottom of the SVG (“ground”)
-            .attr("stroke", "purple")
-            .attr("stroke-width", 3);
+            .attr("y2", height);                                      // bottom of the SVG (“ground”)
+
 
         // Torso
         p.append("rect")
@@ -87,10 +118,7 @@ function drawPeople(data) {
             .attr("x", centerX - (person_space * 0.6) / 2)
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", person_space * 0.6)
-            .attr("height", pScaleTorso(d.torso))
-            .style("fill", "transparent")
-            .style("stroke", "purple")
-            .style("stroke-width", 3);
+            .attr("height", pScaleTorso(d.torso));
 
         // Arms
         p.append("rect")
@@ -98,20 +126,14 @@ function drawPeople(data) {
             .attr("x", (centerX - (person_space * 0.8) / 2) / 2)
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
-            .attr("height", pScaleArms(d.arms))
-            .style("fill", "transparent")
-            .style("stroke", "purple")
-            .style("stroke-width", 3);
+            .attr("height", pScaleArms(d.arms));
 
         p.append("rect")
             .attr("class", "arms")
             .attr("x", (centerX + (person_space * 0.6) / 2) / 2 + person_space * 0.8 / 2)
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
-            .attr("height", pScaleArms(d.arms))
-            .style("fill", "transparent")
-            .style("stroke", "purple")
-            .style("stroke-width", 3);
+            .attr("height", pScaleArms(d.arms));
 
         // Head
         pScaleHead.range([35, (person_space * 0.6) / 2]);
@@ -119,106 +141,37 @@ function drawPeople(data) {
             .attr("class", "head")
             .attr("cx", centerX)
             .attr("cy", height - pScaleLegs(d.legs) - pScaleTorso(d.torso) - pScaleHead(-d.head))
-            .attr("r", pScaleHead(-d.head))
-            .style("fill", "transparent")
-            .style("stroke", "purple")
-            .style("stroke-width", 3);
+            .attr("r", pScaleHead(-d.head));
     });
 
-    svg.selectAll(".legs")
-        .on("mouseover", function () {
-            d3.select(this)
-                .style("fill", "lightblue");
-        })
-        .on("mouseout", function () {
-            d3.select(this)
-                .style("fill", "transparent");
-        }).on("click", function (d) {
-
-            data.sort(function (a, b) { return a.legs - b.legs; });
-
-            xScale.domain(data.map(function (d) { return d.id; }));
-
-            svg.selectAll("g.person")
-                .sort(function (a, b) { return d3.ascending(a.legs, b.legs); })
-                .transition().duration(2000)
-                .attr("transform", function (d) {
-                    return "translate(" + xScale(d.id) + ",0)";
-                })
-        });
-
-    svg.selectAll(".arms")
-        .on("mouseover", function () {
-            d3.select(this)
-                .style("fill", "lightblue");
-        })
-        .on("mouseout", function () {
-            d3.select(this)
-                .style("fill", "transparent");
-        }).on("click", function (d) {
-
-            data.sort(function (a, b) { return a.arms - b.arms; });
-
-            xScale.domain(data.map(function (d) { return d.id; }));
-
-            svg.selectAll("g.person")
-                .sort(function (a, b) { return d3.ascending(a.arms, b.arms); })
-                .transition().duration(2000)
-                .attr("transform", function (d) {
-                    return "translate(" + xScale(d.id) + ",0)";
-                })
-        });
-
-    svg.selectAll(".torso")
-        .on("mouseover", function () {
-            d3.select(this)
-                .style("fill", "lightblue");
-        })
-        .on("mouseout", function () {
-            d3.select(this)
-                .style("fill", "transparent");
-        }).on("click", function (d) {
-
-            data.sort(function (a, b) { return a.torso - b.torso; });
-
-            xScale.domain(data.map(function (d) { return d.id; }));
-
-            svg.selectAll("g.person")
-                .sort(function (a, b) { return d3.ascending(a.torso, b.torso); })
-                .transition().duration(2000)
-                .attr("transform", function (d) {
-                    return "translate(" + xScale(d.id) + ",0)";
-                })
-        });
-
-    svg.selectAll(".head")
-        .on("mouseover", function () {
-            d3.select(this)
-                .style("fill", "lightblue");
-        })
-        .on("mouseout", function () {
-            d3.select(this)
-                .style("fill", "transparent");
-        }).on("click", function (d) {
-
-            data.sort(function (a, b) { return a.head - b.head; });
-
-            xScale.domain(data.map(function (d) { return d.id; }));
-
-            svg.selectAll("g.person")
-                .sort(function (a, b) { return d3.ascending(a.head, b.head); })
-                .transition().duration(2000)
-                .attr("transform", function (d) {
-                    return "translate(" + xScale(d.id) + ",0)";
-                })
-        });
-
+    ['legs', 'arms', 'torso', 'head'].forEach(function (attribute) {
+        svg.selectAll("." + attribute)
+            .on("mouseover", function () {
+                d3.select(this)
+                    .style("stroke", "red")
+                    .style("stroke-width", 6);
+            })
+            .on("mouseout", function () {
+                d3.select(this)
+                    .style("stroke", "plum")
+                    .style("stroke-width", 4)
+                    .style("fill", d3.select(this).attr("data-original-fill"));
+            }).on("click", function () {
+                sortPeopleByAttribute(data, attribute);
+            });
+    });
 };
 
+var colorScale;
 var data = d3.json("data_cases.json");
 
 // Calling some functions on the dataset to create the visualization
 data.then(function (data) {
+
+    colorScale = d3.scaleSequential()
+    .domain([0, data.length-1])
+    .interpolator(d3.interpolateRgb("#1CB5E0", "#000046"));
+
     drawPeople(data);
 }).catch(function (error) {
     console.error('Error loading the data: ', error);

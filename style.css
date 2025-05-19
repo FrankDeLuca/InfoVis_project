@@ -2,18 +2,12 @@
 h1 {
   font-family: "Calibri", sans-serif;
   color: purple;
+  font-size: 5cap;
 }
 
-.person .leg,
-.person .torso,
-.person .arm,
-.person .head {
-  fill: lightgoldenrodyellow;           /* hollow inside */
-  stroke: purple;       /* purple outline */
-  stroke-width: 2px;
+rect, circle, line {
+  fill: white;          
+  stroke: plum;       
+  stroke-width: 4px;
 }
 
-.person .leg-line {
-  stroke: purple;       /* same purple for the leg divider */
-  stroke-width: 2px;
-}
