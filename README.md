@@ -1,7 +1,7 @@
 <h1 align="left">Progetto individuale InfoVis</h1>
+Progetto svolto da Francesco De Luca
 
----
-
+## Testo del progetto
 <div align="justify">
    A partire da un file JSON con dei dati multivariati (ci sono 10 data-cases e
 ogni data-case ha quattro variabili quantitative i cui valori sono tutti
@@ -15,10 +15,6 @@ della variabile associata alla caratteristica cliccata.
 </div>
 
 
-## Linguaggi utilizzati <a name = "languages"></a>
-- JavaScript
-- D3.js
-- HTML, CSS
 
-[@FrankDeLuca](https://github.com/FrankDeLuca)
+
 
