@@ -1,8 +1,9 @@
-// Some values to draw the svg object
+// Some boundaries to draw the svg object
 var margin = { top: 40, right: 40, bottom: 40, left: 40 };
 var width = 1000 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 
+// Drawing the svg object and appending it to the body
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -13,11 +14,13 @@ var svg = d3.select("body").append("svg")
 
 // Defining some scales, without the domain to remain independent from the data
 var xScale = d3.scaleBand().range([0, width]).padding(0.2);
-var pScaleLegs = d3.scaleLinear().range([50, height * 0.3]);
-var pScaleArms = d3.scaleLinear().range([50, height * 0.3]);
+var pScaleLegs = d3.scaleLinear().range([50, height * 0.3]); // Scaling the variables to a maximum of 30% of the height
+var pScaleArms = d3.scaleLinear().range([50, height * 0.2]);
 var pScaleTorso = d3.scaleLinear().range([50, height * 0.3]);
 var pScaleHead = d3.scaleLinear()
 
+
+// Creating the functions to set the domains of the scales
 function setXScaleDomain(data) {
     xScale.domain(data.map(function (d) { return d.id; }));
 }
@@ -37,6 +40,8 @@ function setPScaleHead(data) {
     pScaleHead.domain([d3.min(data, function (d) { return d.head; }), d3.max(data, function (d) { return d.head; })]);
 }
 
+
+// Function to color the people with a gradient based on their index
 function colorPeopleGradient() {
     svg.selectAll("g.person").each(function (d, i) {
         d3.select(this).selectAll('.head, .legs, .torso, .arms')
@@ -46,8 +51,8 @@ function colorPeopleGradient() {
     });
 }
 
-
-var isSorting = false;
+// Function to sort people by a specific attribute
+var isSorting = false; // Flag to prevent multiple clicks during sorting
 
 function sortPeopleByAttribute(data, attribute) {
 
@@ -58,7 +63,7 @@ function sortPeopleByAttribute(data, attribute) {
         return d3.ascending(a[attribute], b[attribute]);
     });
 
-    xScale.domain(data.map(function (d) { return d.id; }));
+    xScale.domain(data.map(function (d) { return d.id; })); // Update the xScale domain based on sorted data
     var transition = svg.selectAll("g.person")
         .sort(function (a, b) { return d3.ascending(a[attribute], b[attribute]); })
         .transition().duration(2500)
@@ -68,10 +73,12 @@ function sortPeopleByAttribute(data, attribute) {
 
     transition.end().then(function () {
         colorPeopleGradient();
-        isSorting = false; // Allow sorting again
+        isSorting = false; // Allow sorting again the clicking
     });
 }
 
+
+// Function to draw the people based on the dataset
 function drawPeople(data) {
 
     setXScaleDomain(data);
@@ -80,19 +87,25 @@ function drawPeople(data) {
     setPScaleTorso(data);
     setPScaleHead(data);
 
+    // Update
     var people = svg.selectAll("g.person")
         .data(data, function (d) { return d.id; });
 
+    // Enter
     var person = people.enter().append("g")
         .attr("class", "person")
         .attr("transform", function (d) {
             return "translate(" + xScale(d.id) + ",0)";
         });
 
+    // Exit
     person.exit().remove();
 
+    // Drawing the people inside a 'bounding box'
     person.each(function (d) {
         var p = d3.select(this);
+
+        // Width and center of the 'bounding box'
         var person_space = xScale.bandwidth();
         var centerX = person_space / 2;
 
@@ -106,10 +119,10 @@ function drawPeople(data) {
 
         p.append("line")
             .attr("class", "legs-divider")
-            .attr("x1", centerX)                                     // center of the rect
-            .attr("y1", height - pScaleLegs(d.legs))                 // top of the legs
-            .attr("x2", centerX)                                     // same x
-            .attr("y2", height);                                      // bottom of the SVG (“ground”)
+            .attr("x1", centerX)                                     
+            .attr("y1", height - pScaleLegs(d.legs))                 
+            .attr("x2", centerX)                                    
+            .attr("y2", height);                                      
 
 
         // Torso
@@ -121,13 +134,15 @@ function drawPeople(data) {
             .attr("height", pScaleTorso(d.torso));
 
         // Arms
+
+        // Left Arm
         p.append("rect")
             .attr("class", "arms")
             .attr("x", (centerX - (person_space * 0.8) / 2) / 2)
             .attr("y", height - pScaleLegs(d.legs) - pScaleTorso(d.torso))
             .attr("width", (centerX - (person_space * 0.4) / 2) / 2)
             .attr("height", pScaleArms(d.arms));
-
+        // Right Arm
         p.append("rect")
             .attr("class", "arms")
             .attr("x", (centerX + (person_space * 0.6) / 2) / 2 + person_space * 0.8 / 2)
@@ -136,7 +151,7 @@ function drawPeople(data) {
             .attr("height", pScaleArms(d.arms));
 
         // Head
-        pScaleHead.range([35, (person_space * 0.6) / 2]);
+        pScaleHead.range([35, (person_space * 0.6) / 2]); // Setting the range for the head scale based on the person space
         p.append("circle")
             .attr("class", "head")
             .attr("cx", centerX)
@@ -144,6 +159,8 @@ function drawPeople(data) {
             .attr("r", pScaleHead(-d.head));
     });
 
+
+    // Mouse events for the attributes
     ['legs', 'arms', 'torso', 'head'].forEach(function (attribute) {
 
         svg.selectAll("." + attribute)
@@ -162,17 +179,23 @@ function drawPeople(data) {
     });
 };
 
+
+// Defining the color scale for the gradient
 var colorScale;
 var data = d3.json("data_cases.json");
 
-// Calling some functions on the dataset to create the visualization
+// Calling the functions on the dataset to create the visualization
 data.then(function (data) {
 
+    // Setting the color scale based on the number of people in the dataset
     colorScale = d3.scaleSequential()
         .domain([0, data.length - 1])
         .interpolator(d3.interpolateRgb("#FEAC5E", "#8A2387"));
-
+        
+    // Actual drawing
     drawPeople(data);
+
+
 }).catch(function (error) {
     console.error('Error loading the data: ', error);
 });
